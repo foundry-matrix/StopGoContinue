@@ -1,0 +1,59 @@
+<html>
+<head>
+	<title>Stop, go, continue</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+<body>
+	<script type="text/javascript">
+
+	$(document).ready(function(){
+		var svg_data;
+		function fetch(){
+			setInterval(function(){
+				$.getJSON('http://localhost:3000', function(data){
+					
+					svg_data = data;
+					
+				});
+			}, 3000);
+		}
+
+		fetch();
+
+		// dummy data
+		svg_data = [{text: "hello", rt:"5"},{text: "yo", rt:"11"},{text: "hi", rt:"8"}]
+
+		var svg = d3.select("body")
+					.append("svg")
+					.attr({
+						width: "500",
+						height: "500"
+					});
+
+		svg.selectAll("circle")
+			.data(go)
+			.enter()
+			.append("circle");
+
+		circles.attr("cx", function(d, i) {
+						return (i * 50) + 25;
+					})
+				   .attr("cy", h/2)
+				   .attr("r", function(d) {
+						return d;
+				   })
+				   .attr("fill", "yellow")
+				   .attr("stroke", "orange")
+				   .attr("stroke-width", function(d) {
+						return d/2;
+				   });
+
+
+	});
+
+*/
+
+	</script>
+</body>
+</html>
