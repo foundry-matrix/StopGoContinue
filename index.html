@@ -22,9 +22,13 @@
 		// fetch();
 
 		// dummy data
-		svg_data = [{text: "hello", rt:"5"},{text: "yo", rt:"11"},{text: "hi", rt:"8"}]
-		var h = 500;
+		svg_data = [{text: "Friday drinks! #continue", rt:"5"},{text: "Keeping the door open #stop", rt:"11"},{text: "Morning challenges #go", rt:"8"}]
+		
+		var h = 200;
 		var w = 500;
+
+		var barPadding = 20;
+
 		var svg = d3.select("body")
 					.append("svg")
 					.attr({
@@ -32,24 +36,57 @@
 						height: h
 					});
 
+
+
 		var circles = svg.selectAll("circle")
 			.data(svg_data)
 			.enter()
 			.append("circle");
 
+	
+
+		var rects = svg.selectAll("rect")
+			   .data(svg_data)
+			   .enter()
+			   .append("rect");
+
+
+
+		rects.attr("x", function(d, i) {
+			   		return i * (50) + 25;
+			   })
+			   .attr("y", function(d) {
+			   		return h - (d.rt*5);
+			   })
+			   .attr("width", 20)
+			   .attr("height", function(d) {
+			   		return d.rt * 5;
+			   });
+
+/*
+
 		circles.attr("cx", function(d, i) {
-						return (i * 50) + 25;
+						return 30;
 					})
-				   .attr("cy", h/2)
+				   .attr("cy", function(d,i){ return i * 50 + 20})
 				   .attr("r", function(d) {
 				   		console.log(d.rt);
 						return d.rt;
 				   })
-				   .attr("fill", "yellow")
-				   .attr("stroke", "orange")
+				   .attr("fill", "black")
 				   .attr("stroke-width", function(d) {
 						return d/2;
 				   });
+*/
+
+
+		svg.selectAll("text")
+			.data(svg_data)
+			.enter()
+			.append("text")
+			.attr("x", function(d,i){ return 25;})
+			.attr("y", function(d,i){ return i*50 + 25})
+			.text(function(d){ return (d.text + " " + d.rt)});
 
 
 	});
