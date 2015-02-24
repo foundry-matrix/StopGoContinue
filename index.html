@@ -9,30 +9,31 @@
 
 	$(document).ready(function(){
 		var svg_data;
-		function fetch(){
-			setInterval(function(){
-				$.getJSON('http://localhost:3000', function(data){
+		// function fetch(){
+		// 	setInterval(function(){
+		// 		$.getJSON('http://localhost:3000', function(data){
 					
-					svg_data = data;
+		// 			svg_data = data;
 					
-				});
-			}, 3000);
-		}
+		// 		});
+		// 	}, 3000);
+		// }
 
-		fetch();
+		// fetch();
 
 		// dummy data
 		svg_data = [{text: "hello", rt:"5"},{text: "yo", rt:"11"},{text: "hi", rt:"8"}]
-
+		var h = 500;
+		var w = 500;
 		var svg = d3.select("body")
 					.append("svg")
 					.attr({
-						width: "500",
-						height: "500"
+						width: w,
+						height: h
 					});
 
-		svg.selectAll("circle")
-			.data(go)
+		var circles = svg.selectAll("circle")
+			.data(svg_data)
 			.enter()
 			.append("circle");
 
@@ -41,7 +42,8 @@
 					})
 				   .attr("cy", h/2)
 				   .attr("r", function(d) {
-						return d;
+				   		console.log(d.rt);
+						return d.rt;
 				   })
 				   .attr("fill", "yellow")
 				   .attr("stroke", "orange")
@@ -52,7 +54,7 @@
 
 	});
 
-*/
+
 
 	</script>
 </body>
