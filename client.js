@@ -18,13 +18,13 @@ var twitter = new Twitter({
 var Schema = mongoose.Schema;
 
 var tweetsSchema = new Schema({
-  id: Number,
-  textBody: String,
-  retweetCount: Number,
-  originalTweeter: String,
-  hashtag: String,
-  timeCreated: Number
-});
+    id: Number,
+    textBody: String,
+    retweetCount: Number,
+    originalTweeter: String,
+    hashtag: String,
+    timeCreated: Number
+}); 
 
 var TweetCollection = mongoose.model('TweetCollection', tweetsSchema);
 
@@ -39,24 +39,19 @@ twitter.stream('statuses/filter', {track: '@discofingers #stop, @discofingers #g
 });
 
 
-/*
-twitter.stream('statuses/filter', {track: '#love'},  function(stream){
-  stream.on('data',retweetSorter);
-  stream.on('error', function(error) {
-    console.log(error);
-  });
-});
-*/
 
 
 
 stored_tweets =[{id: 123, textBody: "Wedensday drinks! #continue", retweetCount:"4"}]
 
+
+
   function retweetSorter(tweet, callback) {
     //console.log(tweet);
     // console.log(tweet.text);
         if(tweet.retweeted_status == undefined){   //i.e. is a new tweet
-            suggestionCreate(tweet);
+            regexFormatter(tweet);
+            //suggestionCreate(tweet);
         }
         else {                                      // i.e. is a vote
             fetchRT(tweet);
@@ -70,21 +65,28 @@ stored_tweets =[{id: 123, textBody: "Wedensday drinks! #continue", retweetCount:
     console.log(id);
 
 
-  updateInfo(id,rt_count);
+    updateInfo(id,rt_count);
   }
 
 
   function updateInfo(id,rt_count){
-
     TweetCollection.findOneAndUpdte({ id: id}, {$set:{retweetCount:rt_count }} ,function(err){
       console.log(err);
-    })
+    });
     
   }
 
 
+  function regexFormatter (tweet, callback){
+    var tweetText = tweet.text;
+    var regex = /\S*#(?:\[[^\]]+\]|\S+)/g;
+    var formatter = regex.exec(tweetText);
+    suggestionCreate(tweet,formatter)
+  };
 
-  function suggestionCreate(tweet){
+
+
+  function suggestionCreate(tweet,formatter){
 
     //var textBody = regexFormatter(tweet.text);
 
@@ -93,8 +95,10 @@ stored_tweets =[{id: 123, textBody: "Wedensday drinks! #continue", retweetCount:
     var retweetCount = 0;
     var originalTweeter = tweet.user.name;
     var voters = [];
-    var hashtag = [];
+    var hashtag = formatter[0];
     var timeCreated = tweet.timestamp_ms;
+    var idNumber = tweet.id;
+
 
     new_tweet = new TweetCollection({
         id: id,
@@ -108,30 +112,61 @@ stored_tweets =[{id: 123, textBody: "Wedensday drinks! #continue", retweetCount:
     new_tweet.save(function(err){
       console.log("saved");
       console.log(err);
-    })
+    });
+
+}
 
 /*
-    var object = {
-        textBody : textBody,
-        retweetCount : retweetCount,
-        originalTweeter : originalTweeter,
-        voters : voters,
-        hashtag : hashtag,
-        timeCreated : timeCreated 
-    };
+function saveSuggestion(suggestionObject){
+    storedTweets.tweets.push(suggestionObject);
+} 
+
 */
-    console.log(object);
-  }
 
 
 
 
-  function regexFormatter (tweetText){
-    var regex = /\S*#(?:\[[^\]]+\]|\S+)/g;
-    var formatter = regex.exec(tweetText);
-    var hashtag = formatter[0];
-    
-  };
+
+
+
+
+var storedTweets = {tweets:
+    [ 
+        { textBody : 'asdfasdfsdsf @founderscoders #go',
+              retweetCount : 0,
+              originalTweeter : 'gregaubs',
+              voters : [],
+              hashtag : '#go',
+              timeCreated : 1500, 
+              idNumber : 1201,
+        },
+        { textBody : '@founderscoders dfdfddfd #stop',
+              retweetCount : 1,
+              originalTweeter : 'per',
+              voters : [],
+              hashtag : '#stop',
+              timeCreated : 1505, 
+              idNumber : 1202,
+        },
+        { textBody : '@founderscoders fdfddff  #continue',
+            retweetCount : 5,
+              originalTweeter : 'asim',
+              voters : [],
+              hashtag : '#continue',
+              timeCreated : 1510, 
+              idNumber : 1203,
+        }
+    ]
+};
+
+
+
+
+
+
+
+
+
 
 
 
