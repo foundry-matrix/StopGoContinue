@@ -1,10 +1,8 @@
-var fs= require("fs");
+var fs = require("fs");
 var Twitter = require('twitter');
 var mongoose = require('mongoose');
 
-
 mongoose.connect('mongodb://foundrymatrix:foundrymatrix@ds048537.mongolab.com:48537/stopgocontinue');
-
 
 var twitter = new Twitter({
   consumer_key: "DXOdJmAOCaGNWYExSEnUl4gUH",
@@ -14,35 +12,48 @@ var twitter = new Twitter({
 });
 
 
+  twitter.stream('statuses/filter', {track: '@discofingers #stop, @discofingers #go, @discofingers #continue'},  function(stream){
+    stream.on('data',retweetSorter);
+    stream.on('error', function(error) {
+      console.log(error);
+    });
+  });
+
+
+
+
+
+
 
 var Schema = mongoose.Schema;
 
 var tweetsSchema = new Schema({
-    id: Number,
-    textBody: String,
-    retweetCount: Number,
-    originalTweeter: String,
-    hashtag: String,
-    timeCreated: Number
+      id: String,
+      textBody: String,
+      retweetCount: Number,
+      originalTweeter: String,
+      hashtag: String,
+      timeCreated: Number,
 }); 
 
 var TweetCollection = mongoose.model('TweetCollection', tweetsSchema);
 
 
+function serveTweets(response){
+    TweetCollection.find({}, function(err,tweets){
+      
+      tweets.forEach(function(tweet){
 
-twitter.stream('statuses/filter', {track: '@discofingers #stop, @discofingers #go, @discofingers #continue'},  function(stream){
-  stream.on('data',retweetSorter);
+      });
 
-  stream.on('error', function(error) {
-    console.log(error);
-  });
-});
-
-
-
+      response.writeHead(200, {"Content-Type": "application/javascript"});
+      response.end(JSON.stringify(tweets));
 
 
-stored_tweets =[{id: 123, textBody: "Wedensday drinks! #continue", retweetCount:"4"}]
+
+    });
+  }
+
 
 
 
@@ -63,14 +74,12 @@ stored_tweets =[{id: 123, textBody: "Wedensday drinks! #continue", retweetCount:
     var rt_count = tweet.retweeted_status.retweet_count;
     console.log("Retweeted tweet with id:");
     console.log(id);
-
-
     updateInfo(id,rt_count);
   }
 
 
   function updateInfo(id,rt_count){
-    TweetCollection.findOneAndUpdte({ id: id}, {$set:{retweetCount:rt_count }} ,function(err){
+    TweetCollection.findOneAndUpdte({ id: id}, {$set: {retweetCount:rt_count } } ,function(err){
       console.log(err);
     });
     
@@ -87,9 +96,7 @@ stored_tweets =[{id: 123, textBody: "Wedensday drinks! #continue", retweetCount:
 
 
   function suggestionCreate(tweet,formatter){
-
     //var textBody = regexFormatter(tweet.text);
-
     var textBody = tweet.text;
     var id = tweet.id;
     var retweetCount = 0;
@@ -116,53 +123,8 @@ stored_tweets =[{id: 123, textBody: "Wedensday drinks! #continue", retweetCount:
 
 }
 
-/*
-function saveSuggestion(suggestionObject){
-    storedTweets.tweets.push(suggestionObject);
-} 
 
-*/
-
-
-
-
-
-
-
-
-var storedTweets = {tweets:
-    [ 
-        { textBody : 'asdfasdfsdsf @founderscoders #go',
-              retweetCount : 0,
-              originalTweeter : 'gregaubs',
-              voters : [],
-              hashtag : '#go',
-              timeCreated : 1500, 
-              idNumber : 1201,
-        },
-        { textBody : '@founderscoders dfdfddfd #stop',
-              retweetCount : 1,
-              originalTweeter : 'per',
-              voters : [],
-              hashtag : '#stop',
-              timeCreated : 1505, 
-              idNumber : 1202,
-        },
-        { textBody : '@founderscoders fdfddff  #continue',
-            retweetCount : 5,
-              originalTweeter : 'asim',
-              voters : [],
-              hashtag : '#continue',
-              timeCreated : 1510, 
-              idNumber : 1203,
-        }
-    ]
-};
-
-
-
-
-
+exports.serveTweets = serveTweets;
 
 
 
