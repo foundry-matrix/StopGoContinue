@@ -16,41 +16,101 @@ twitter.stream('statuses/filter', {track: '@discofingers #stop, @discofingers #g
   });
 });
 
-  function retweetSorter(tweet, callback) {
+function retweetSorter(tweet, callback) {
     // console.log(tweet.text);
-        if(tweet.retweeted_status == undefined){   //i.e. is a new tweet
-            suggestionCreate(tweet);
-        };
-        else {                                      // i.e. is a vote
-            // ***INSERT RETWEET FUNCTION***
-        };
-  };
+    if(tweet.retweeted_status == undefined){   //i.e. is a new tweet
+        suggestionCreate(tweet);
+    };
+    else {                                      // i.e. is a vote
+        // ***INSERT RETWEET FUNCTION***
+    };
+};
 
 
-  function suggestionCreate(tweet){
+function regexFormatter (tweet, callback){
+    var tweetText = tweet.text; 
+    var regex = /\S*#(?:\[[^\]]+\]|\S+)/g;
+    var formatter = regex.exec(tweetText);
+    // var hashtag = formatter[0];
+
+    //***INSERT @ STRIPPING FUNCTION LATER***//
+    
+};
+
+function suggestionCreate(tweet, callback){
     
     var textBody = regexFormatter(tweet.text);
     var retweetCount = 0;
     var originalTweeter = tweet.user.name;
     var voters = [];
-    var hashtag = 
+    var hashtag = formatter[0];
     var timeCreated = tweet.timestamp_ms;
+    var idNumber = tweet.id;
 
-    var object = {
+    var suggestionObject = {
         textBody : textBody,
         retweetCount : retweetCount,
         originalTweeter : originalTweeter,
         voters : voters,
         hashtag : hashtag,
-        timeCreated : timeCreated 
+        timeCreated : timeCreated, 
+        idNumber : idNumber,
     };
+    callback(suggestionObject);
+};
 
-  };
 
-  function regexFormatter (tweetText){
-    var regex = /\S*#(?:\[[^\]]+\]|\S+)/g;
-    var formatter = regex.exec(tweetText);
-    var hashtag = formatter[0];
+function saveSuggestion(suggestionObject){
+    storedTweets.tweets.push(suggestionObject);
+} 
 
-    
-  };
+
+
+
+
+
+
+
+
+
+var storedTweets = {tweets:
+    [ 
+        { textBody : 'asdfasdfsdsf @founderscoders #go',
+              retweetCount : 0,
+              originalTweeter : 'gregaubs',
+              voters : [],
+              hashtag : '#go',
+              timeCreated : 1500, 
+              idNumber : 1201,
+        },
+        { textBody : '@founderscoders dfdfddfd #stop',
+              retweetCount : 1,
+              originalTweeter : 'per',
+              voters : [],
+              hashtag : '#stop',
+              timeCreated : 1505, 
+              idNumber : 1202,
+        },
+        { textBody : '@founderscoders fdfddff  #continue',
+            retweetCount : 5,
+              originalTweeter : 'asim',
+              voters : [],
+              hashtag : '#continue',
+              timeCreated : 1510, 
+              idNumber : 1203,
+        }
+    ]
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
