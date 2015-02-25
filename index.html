@@ -22,8 +22,11 @@
 		// fetch();
 
 		// dummy data
-		svg_data = [{text: "Friday drinks! #continue", rt:"5"},{text: "Keeping the door open #stop", rt:"11"},{text: "Morning challenges #go", rt:"8"}]
+		svg_data = [{text: "Wedensday drinks! #continue", rt:"4"},{text: "Removing the door #go", rt:"15"},{text: "Thursday drinks! #continue", rt:"9"},{text: "Keeping the door open #cotinue", rt:"5"}, {text: "Friday drinks! #continue", rt:"13"},{text: "Keeping the door open #stop", rt:"11"},{text: "Morning challenges #go", rt:"2"} ]
 		
+		length = svg_data.length;
+
+		var barPadding = 20;
 		var h = 200;
 		var w = 500;
 
@@ -33,37 +36,56 @@
 					.append("svg")
 					.attr({
 						width: w,
-						height: h
+						height: h,
+					});
+
+		var svg2 = d3.select("body")
+					.append("svg")
+					.attr({
+						width: w,
+						height: h,
+						y: 210
 					});
 
 
 
-		var circles = svg.selectAll("circle")
-			.data(svg_data)
-			.enter()
-			.append("circle");
+		var texts = svg2.selectAll("text")
+				.data(svg_data)
+				.enter()
+				.append("text")
+				.attr("x", function(d,i){ return 25;})
+				.attr("y", function(d,i){ return i * ( h/length)  + 20})
+				.text(function(d){ return (d.text + " " + d.rt)});
 
 	
-
 		var rects = svg.selectAll("rect")
 			   .data(svg_data)
 			   .enter()
-			   .append("rect");
+			   .append("rect")
+			   .attr("fill", function (d) { return "rgb(0, 0, " + (d.rt * 20) + ")" ;});
 
+
+
+ 
 
 
 		rects.attr("x", function(d, i) {
-			   		return i * (50) + 25;
+			   		return i * ( w/length );
 			   })
 			   .attr("y", function(d) {
-			   		return h - (d.rt*5);
+			   		return h - (d.rt * 5);
 			   })
-			   .attr("width", 20)
+			   .attr("width", function(d){ return w/length})
 			   .attr("height", function(d) {
 			   		return d.rt * 5;
 			   });
 
 /*
+
+	var circles = svg.selectAll("circle")
+			.data(svg_data)
+			.enter()
+			.append("circle");
 
 		circles.attr("cx", function(d, i) {
 						return 30;
@@ -79,14 +101,6 @@
 				   });
 */
 
-
-		svg.selectAll("text")
-			.data(svg_data)
-			.enter()
-			.append("text")
-			.attr("x", function(d,i){ return 25;})
-			.attr("y", function(d,i){ return i*50 + 25})
-			.text(function(d){ return (d.text + " " + d.rt)});
 
 
 	});
