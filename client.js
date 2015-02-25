@@ -1,8 +1,7 @@
+
 var fs = require("fs");
 var Twitter = require('twitter');
 var mongoose = require('mongoose');
-
-mongoose.connect('mongodb://foundrymatrix:foundrymatrix@ds048537.mongolab.com:48537/stopgocontinue');
 
 var twitter = new Twitter({
   consumer_key: "DXOdJmAOCaGNWYExSEnUl4gUH",
@@ -12,18 +11,19 @@ var twitter = new Twitter({
 });
 
 
-  twitter.stream('statuses/filter', {track: '@discofingers #stop, @discofingers #go, @discofingers #continue'},  function(stream){
-    stream.on('data',retweetSorter);
+//_________*** Twitter Stream ***_________//
+
+twitter.stream('statuses/filter', {track: '@discofingers #stop, @discofingers #go, @discofingers #continue'},  function(stream){
+    stream.on('data',retweetSorter);        
     stream.on('error', function(error) {
-      console.log(error);
+        console.log(error);
     });
-  });
+});
 
 
+//_________*** MongoDB ***_________//
 
-
-
-
+mongoose.connect('mongodb://foundrymatrix:foundrymatrix@ds048537.mongolab.com:48537/stopgocontinue');
 
 var Schema = mongoose.Schema;
 
@@ -39,64 +39,30 @@ var tweetsSchema = new Schema({
 var TweetCollection = mongoose.model('TweetCollection', tweetsSchema);
 
 
-function serveTweets(response){
-    TweetCollection.find({}, function(err,tweets){
-      
-      tweets.forEach(function(tweet){
+//_________*** Deciding whether a new tweet (suggestion) or retweet (vote) ***_________//
 
-      });
-
-      response.writeHead(200, {"Content-Type": "application/javascript"});
-      response.end(JSON.stringify(tweets));
-
-
-
-    });
-  }
+function retweetSorter(tweet, callback) {
+    if(tweet.retweeted_status == undefined){   //i.e. is a new tweet
+        regexFormatter(tweet);
+    }
+    else {                                      // i.e. is a vote
+        fetchRT(tweet);
+     };
+};
 
 
+//_________*** If New Tweet ***_________//
 
-
-  function retweetSorter(tweet, callback) {
-    //console.log(tweet);
-    // console.log(tweet.text);
-        if(tweet.retweeted_status == undefined){   //i.e. is a new tweet
-            regexFormatter(tweet);
-            //suggestionCreate(tweet);
-        }
-        else {                                      // i.e. is a vote
-            fetchRT(tweet);
-         };
-  };
-
-  function fetchRT(tweet) {
-    var id = tweet.retweeted_status.id;
-    var rt_count = tweet.retweeted_status.retweet_count;
-    console.log("Retweeted tweet with id:");
-    console.log(id);
-    updateInfo(id,rt_count);
-  }
-
-
-  function updateInfo(id,rt_count){
-    TweetCollection.findOneAndUpdte({ id: id}, {$set: {retweetCount:rt_count } } ,function(err){
-      console.log(err);
-    });
-    
-  }
-
-
-  function regexFormatter (tweet, callback){
+function regexFormatter (tweet, callback){
     var tweetText = tweet.text;
     var regex = /\S*#(?:\[[^\]]+\]|\S+)/g;
     var formatter = regex.exec(tweetText);
     suggestionCreate(tweet,formatter)
-  };
+};
 
 
 
-  function suggestionCreate(tweet,formatter){
-    //var textBody = regexFormatter(tweet.text);
+function suggestionCreate(tweet,formatter){
     var textBody = tweet.text;
     var id = tweet.id;
     var retweetCount = 0;
@@ -117,10 +83,61 @@ function serveTweets(response){
     });
 
     new_tweet.save(function(err){
-      console.log("saved");
-      console.log(err);
+        console.log("saved new tweet " + id);
+        if (err) {console.log(err)};
     });
+}
 
+
+//_________*** If Retweet ***_________//
+
+function fetchRT(tweet) {
+    var id = tweet.retweeted_status.id;
+    var rt_count = tweet.retweeted_status.retweet_count;
+    updateInfo(id,rt_count);
+    console.log("tweet " + id + " has been updated with a count of " + rt_count);
+}
+
+
+function updateInfo(id,rt_count){
+    TweetCollection.findOneAndUpdate({ id: id}, {$set: {retweetCount:rt_count } } ,function(err){
+      if(err){console.log(err)};
+    });
+}
+
+
+//_________*** Fetching Tweets from the Database ***_________//
+
+function serveTweets(response){
+    TweetCollection.find({}, function(err,tweets){
+      
+        var stopGroup = [];
+        var goGroup = [];
+        var continueGroup = [];
+
+        tweets.forEach(function(tweet){
+            if (tweet.hashtag=='#stop') {
+                stopGroup.push(tweet);
+            } else if (tweet.hashtag=='#go') {
+                goGroup.push(tweet);
+            } else if (tweet.hashtag=='#continue') {
+                continueGroup.push(tweet);
+            } else {
+                throw "Error - hashtag isn't stop go or continue";
+            }
+        });
+
+        var storedTweets = {
+            stop : stopGroup,
+            go : goGroup,
+            cont: continueGroup
+        }
+
+        response.writeHead(200, {"Content-Type": "application/javascript"});
+        response.end(JSON.stringify(storedTweets));
+        console.log("response sent");
+
+    });
 }
 
 
